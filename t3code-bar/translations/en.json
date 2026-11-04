@@ -1,21 +1,24 @@
 {
   "title": "T3 Code Bar",
   "tabs": { "threads": "Threads", "usage": "Usage" },
-  "actions": { "refresh": "Refresh", "settings": "Plugin settings" },
+  "actions": { "refresh": "Refresh", "settings": "Open settings" },
   "providers": { "codex": "Codex", "claude": "Claude", "opencode": "OpenCode" },
   "widget": {
     "counts": "T3 Code · {waiting} waiting · {working} working",
     "provider_left": "{provider} {percent}%",
     "waiting": "{count} waiting",
-    "limits": "{summary} left (5h)"
+    "approval": "Approval",
+    "input": "Input",
+    "limits": "{summary} left (5-hour)"
   },
   "threads": {
     "loading": "Reading T3 Code data…",
     "offline": "T3 Code offline · showing saved threads",
-    "empty": "No threads"
+    "empty": "No threads yet",
+    "empty_hint": "Threads you start in T3 Code show up here."
   },
   "status": {
-    "approval": "Approval", "input": "Input", "connecting": "Connecting",
+    "approval": "Needs approval", "input": "Needs input", "connecting": "Connecting",
     "goal": "Goal", "working": "Working", "failed": "Failed",
     "planReady": "Plan ready", "done": "Done", "idle": "Idle"
   },
@@ -27,21 +30,25 @@
     "invalidData": "T3 Code returned invalid data. Update the plugin or retry."
   },
   "windows": {
-    "session": "5h", "weekly": "Weekly", "monthly": "Monthly", "other": "Other",
+    "session": "5-hour", "weekly": "Weekly", "monthly": "Monthly", "other": "Other",
     "scoped": "Weekly · {model}"
   },
-  "pace": { "ahead": "Ahead of pace", "on": "On pace", "under": "Under pace" },
+  "pace": { "ahead": "Usage above pace", "on": "On pace", "under": "Usage below pace" },
   "limits": {
     "left": "left",
-    "segment": "{account} · {percent}%",
-    "segment_missing": "{account} · no reading",
+    "segment": "{account} {percent}%",
+    "segment_missing": "{account} no reading",
     "loading": "Reading usage limits…",
     "empty": "No subscription limits reported by the hub.",
-    "resets_now": "resets now",
+    "resets_now": "Resets now",
     "resets_momentarily": "Resets momentarily",
-    "resets_in": "resets in {time}",
-    "next_refill": "next refill +{percent}% at {time}",
+    "resets_in": "Resets in {time}",
+    "refill_in": "Refill +{percent}% in {time}",
+    "refill_now": "Refill +{percent}% now",
     "updated": "Updated {minutes} min ago",
+    "updated_now": "Updated just now",
+    "accounts": "{count} accounts",
+    "configure_hint": "Add the hub URL and management key to see your Codex and Claude limits.",
     "never_updated": "No successful reading yet"
   },
   "time": {
@@ -49,7 +56,7 @@
     "seconds": "{seconds}s", "minutes": "{minutes}m", "hours": "{hours}h", "days": "{days}d"
   },
   "errors": {
-    "configure": "Configure the CLIProxyAPI hub in the plugin settings",
+    "configure": "Connect a CLIProxyAPI hub",
     "management_key": "Hub access refused: check the management key",
     "hub_url": "Enter a valid HTTP or HTTPS hub URL without credentials, query, or fragment. Check the management key for line breaks.",
     "network": "Cannot reach the CLIProxyAPI hub. Check its URL, network, and TLS certificate.",

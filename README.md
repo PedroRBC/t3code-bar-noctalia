@@ -65,9 +65,9 @@ type = "PedroRBC/t3code-bar:status"
 end = ["t3code", "tray", "session"]
 ```
 
-The widget shows the official T3 Code icon and a count: waiting threads when any need you (in the
-`error` color), otherwise working threads (in `primary`). The count hides at zero and the
-icon dims while T3 Code is offline. The tooltip repeats the counts and the 5-hour limit
+The widget shows the official T3 Code icon. When threads need you it adds an amber pill
+(`Approval`, `Input` or `2 waiting`); otherwise it shows a `primary` dot and the number of
+working threads. Nothing is added at zero, and the icon dims while T3 Code is offline. The tooltip repeats the counts and the 5-hour limit
 left per provider.
 
 Click the widget to toggle the panel. You can also toggle it from a script or a
@@ -79,14 +79,16 @@ noctalia msg panel-toggle PedroRBC/t3code-bar:panel
 
 ### Threads tab
 
-Each row shows the project, a status, the thread title, and the branch and provider when
-known. Pinned threads carry a pin glyph. Clicking a row opens the thread in T3 Code and
-closes the panel.
+Each row has two lines: the thread title (with a pin glyph when pinned), then the
+provider, project and branch on the left and the status and its time on the right.
+Statuses that need you are amber pills, like the bar widget; live runs use the theme's
+primary color and failures its error color. Clicking a row opens the thread in T3 Code
+and closes the panel.
 
 | Status | Meaning |
 | --- | --- |
-| Approval | The thread, or one of its subagents, is waiting for you to approve an action. |
-| Input | The thread, or one of its subagents, is waiting for your answer. |
+| Needs approval | The thread, or one of its subagents, is waiting for you to approve an action. |
+| Needs input | The thread, or one of its subagents, is waiting for your answer. |
 | Connecting | A run is starting. |
 | Working / Goal | A run is in progress, with elapsed time. Goal means goal mode is on. |
 | Failed | The latest run failed or the session reported an error. |
@@ -94,16 +96,20 @@ closes the panel.
 | Done | The latest run finished after your last visit to the thread. |
 | `5m`, `2h`, `3d` | Nothing above applies; time since the thread's latest message. |
 
+The time next to a status is how long it has lasted: run time for live runs, waiting time
+for approvals and input.
+
 Archived and deleted threads, side chats and subagent threads are left out. A subagent's
 pending approval or input marks its root thread as waiting.
 
 ### Usage tab
 
 One section per provider, with one card per limit window (5 hours first, then weekly,
-then others). Each card shows the percentage left, a pace marker (ahead of, on or under
-pace), a bar split into one segment per account, the reset time, and the next refill when
-the pool has more than one account. Segments are labelled with e-mail initials, never full
-addresses. An account whose weekly limit is used up adds nothing to its 5-hour pool, as in
+then others). Each card shows the percentage left, a pace marker (usage above, on or
+below pace), a bar split into one segment per account, and when usage comes back: the
+reset time, or for pools of several accounts the next refill (`Refill +33% in 1h 11m`),
+plus the soonest reset when that is a different moment. Segments of a multi-account pool
+are labelled with e-mail initials, never full addresses. An account whose weekly limit is used up adds nothing to its 5-hour pool, as in
 T3 Code. The footer shows when usage was last read and has a **Refresh** button.
 
 ## Settings
