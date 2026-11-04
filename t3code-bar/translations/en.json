@@ -6,13 +6,13 @@
   "widget": {
     "counts": "T3 Code · {waiting} waiting · {working} working",
     "provider_left": "{provider} {percent}%",
+    "waiting": "{count} waiting",
     "limits": "{summary} left (5h)"
   },
   "threads": {
     "loading": "Reading T3 Code data…",
     "offline": "T3 Code offline · showing saved threads",
-    "empty": "No threads",
-    "status_time": "{status} {time}"
+    "empty": "No threads"
   },
   "status": {
     "approval": "Approval", "input": "Input", "connecting": "Connecting",
@@ -32,7 +32,7 @@
   },
   "pace": { "ahead": "Ahead of pace", "on": "On pace", "under": "Under pace" },
   "limits": {
-    "left": "{percent}% left",
+    "left": "left",
     "segment": "{account} · {percent}%",
     "segment_missing": "{account} · no reading",
     "loading": "Reading usage limits…",
@@ -46,7 +46,7 @@
   },
   "time": {
     "days_hours": "{days}d {hours}h", "hours_minutes": "{hours}h {minutes}m",
-    "minutes": "{minutes}m", "hours": "{hours}h", "days": "{days}d"
+    "seconds": "{seconds}s", "minutes": "{minutes}m", "hours": "{hours}h", "days": "{days}d"
   },
   "errors": {
     "configure": "Configure the CLIProxyAPI hub in the plugin settings",
