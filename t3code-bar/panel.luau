@@ -8,8 +8,7 @@ local render
 local AMBER, ON_AMBER, CLAUDE = "#F2C14E", "#1F1600", "#D97757"
 local PROVIDERS = {
   codex = { glyph = "brand-openai" },
-  -- Rows use a neutral Claude mark (images cannot be tinted) so only status carries color; Usage keeps the brand mark.
-  claudeAgent = { image = "assets/claude-mono.svg" },
+  claudeAgent = { image = "assets/claude.svg" },
   claude = { image = "assets/claude.svg" },
   opencode = { glyph = "terminal-2" },
 }
@@ -40,11 +39,11 @@ local function elapsed(stamp, precise)
   end
   return tr("time.days", { days = math.floor(hours / 24) })
 end
-local function providerIcon(provider, size)
+local function providerIcon(provider, size, color)
   local known = PROVIDERS[provider]
   if not known then return nil end
   if known.image then return ui.image({ path = known.image, width = size, height = size, fit = "contain" }) end
-  return ui.glyph({ name = known.glyph, size = size, color = "on_surface_variant" })
+  return ui.glyph({ name = known.glyph, size = size, color = color or "on_surface_variant" })
 end
 local function pill(text)
   return ui.row({ paddingH = 7, paddingV = 0, radius = 9, fill = AMBER, align = "center" }, {
@@ -70,7 +69,7 @@ local function threadRow(thread, online)
   if thread.pinned then table.insert(top, ui.glyph({ name = "pinned", size = 13, color = "on_surface_variant" })) end
   local meta = {}
   -- An empty slot keeps project names aligned when the provider is unknown.
-  table.insert(meta, type(thread.provider) == "string" and providerIcon(thread.provider, 13)
+  table.insert(meta, type(thread.provider) == "string" and providerIcon(thread.provider, 13, thread.provider == "codex" and "primary" or nil)
     or ui.box({ width = 13, height = 13, fill = "on_surface/0" }))
   local place = {}
   if type(thread.projectName) == "string" and thread.projectName ~= "" then table.insert(place, thread.projectName) end

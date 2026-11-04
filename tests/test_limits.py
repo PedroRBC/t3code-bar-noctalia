@@ -376,6 +376,20 @@ threadData.data.threads={} watches.threads(threadData)
 assert(texts(tree):find("No threads yet",1,true))
 ''')
 
+    def test_thread_provider_icon_colors(self):
+        self.ui_case("panel.luau", '''
+threadData.data.threads[1].provider="claudeAgent"
+threadData.data.threads[3].provider="opencode"
+onOpen()
+local rows=tree.children[2].children
+local claude=rows[1].children[2].children[1]
+local codex=rows[2].children[2].children[1]
+local opencode=rows[3].children[2].children[1]
+assert(claude.kind=="image" and claude.props.path=="assets/claude.svg")
+assert(codex.kind=="glyph" and codex.props.name=="brand-openai" and codex.props.color=="primary")
+assert(opencode.props.color=="on_surface_variant")
+''')
+
     def test_widget_urgency_tooltip_and_zero_count(self):
         self.ui_case("widget.luau", '''
 assert(tree.children[1].props.path=="assets/t3code.png" and tree.children[1].props.opacity==1)

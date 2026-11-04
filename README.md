@@ -202,9 +202,7 @@ noctalia plugins lint t3code-bar
 python3 -m unittest discover -s tests -v
 ```
 
-Tests make no network requests and use synthetic data only. The helper's JSON and the
-UI behavior are described in the
-[design contract](docs/superpowers/specs/2026-11-04-t3code-bar-design.md).
+Tests make no network requests and use synthetic data only.
 
 ## Credits
 
