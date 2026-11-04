@@ -257,6 +257,21 @@ runCalls[2].cb({exitCode=1,stdout="bad"})
 assert(states.threads.data.counts.waiting==1 and states.threads.error=="unavailable")
 ''')
 
+    def test_service_show_settled_threads_preserves_latest_count(self):
+        self.service_case('''
+assert(runCalls[1].argv[5]=="7" and #runCalls[1].argv==5) -- Missing setting keeps existing behavior.
+runCalls[1].cb({exitCode=1})
+config.show_settled_threads=false
+onConfigChanged()
+update()
+assert(runCalls[2].argv[5]=="7" and runCalls[2].argv[6]=="--hide-settled" and config.latest_count==7)
+runCalls[2].cb({exitCode=1})
+config.show_settled_threads=true
+onConfigChanged()
+update()
+assert(runCalls[3].argv[5]=="7" and #runCalls[3].argv==5)
+''', 'config.latest_count=7')
+
     def test_service_failed_account_drops_out_but_others_stay(self):
         self.service_case('''
 respond(1,"accounts",{files={{id="a",auth_index="1",provider="codex"},{id="b",auth_index="2",provider="claude"}}})

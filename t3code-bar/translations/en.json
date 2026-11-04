@@ -67,6 +67,7 @@
     "hub_url": { "label": "CLIProxyAPI hub URL", "description": "Base URL, for example https://host:8317. Usage is read through this hub." },
     "management_key": { "label": "Management key", "description": "Hub management key. Sent only in the HTTP Authorization header." },
     "limits_refresh_minutes": { "label": "Usage refresh interval (minutes)", "description": "Refresh on start, at this interval, and on panel open when older than one minute." },
+    "show_settled_threads": { "label": "Show settled threads", "description": "Include threads in T3 Code’s Settled section. Disabling this does not hide ordinary idle threads." },
     "latest_count": { "label": "Latest threads", "description": "Recent threads shown after pinned, waiting, and working threads. Set zero to hide recent threads." }
   }
 }

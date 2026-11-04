@@ -174,6 +174,11 @@ class ThreadsTests(unittest.TestCase):
         pin = self.by_id(result)["pin-approval"]
         self.assertEqual((pin["group"], pin["status"], pin["pinned"]), ("pinned", "approval", True))
         self.assertEqual(result["counts"], {"waiting": 3, "working": 2})
+        hidden = fx.call("--latest", "0")
+        self.assertEqual([t["id"] for t in hidden["threads"]], [
+            "pin-a", "pin-b", "pin-approval", "pin-new", "pin-old",
+            "wait-new", "wait-old", "work-new", "work-old"])
+        self.assertEqual(hidden["counts"], result["counts"])
 
     def test_filters(self):
         fx = self.fx
@@ -206,6 +211,20 @@ class ThreadsTests(unittest.TestCase):
         self.assertEqual(len(self.fx.call()["threads"]), 10)
         self.assertEqual(len(self.fx.call("--latest", "99")["threads"]), 50)
         self.assertEqual(self.fx.call("--latest", "-3")["threads"], [])
+
+    def test_hide_settled_uses_explicit_marker_before_latest_limit(self):
+        fx = self.fx
+        fx.thread("idle", updated=1)
+        fx.thread("active-override", updated=2, settledOverride="active")
+        fx.thread("settled", updated=9, settledOverride="settled")
+        fx.thread("settled-pin", pinnedAt=ts(1), settledOverride="settled")
+        fx.thread("working"); fx.run("working", "running")
+        fx.thread("waiting"); fx.request("waiting", "command")
+        self.assertIn("settled", self.by_id(fx.call()))
+        self.assertIn("settled-pin", self.by_id(fx.call()))
+        hidden = fx.call("--hide-settled", "--latest", "2")
+        self.assertEqual(set(self.by_id(hidden)), {"idle", "active-override", "working", "waiting"})
+        self.assertEqual(hidden["counts"], {"waiting": 1, "working": 1})
 
     def test_offline_and_missing_runtime(self):
         self.fx.thread("a")

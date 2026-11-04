@@ -121,7 +121,8 @@ Edited under Settings → Plugins → T3 Code Bar.
 | `hub_url` | `string` | empty | CLIProxyAPI hub base URL, for example `https://host:8317`, without a management path. |
 | `management_key` | `string` | empty | Hub management key. |
 | `limits_refresh_minutes` | `int` | `5` | Usage refresh interval in minutes, 1 to 60. |
-| `latest_count` | `int` | `10` | Recent threads listed after pinned, waiting and working ones, 0 to 50. `0` hides them. |
+| `show_settled_threads` | `bool` | `true` | Include threads explicitly marked Settled in T3 Code. Disable to hide those threads without hiding ordinary idle threads. |
+| `latest_count` | `int` | `10` | Recent threads listed after pinned, waiting and working ones, 0 to 50. `0` hides them. Preserved while settled threads are hidden. |
 
 While the hub URL or key is empty, the Usage tab shows a button that opens these settings.
 

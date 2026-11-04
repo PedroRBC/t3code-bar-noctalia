@@ -29,8 +29,10 @@ end
 local function pollThreads()
   if threadsBusy then return end
   threadsBusy = true
-  local accepted = noctalia.runAsync({ "python3", noctalia.pluginDir() .. "/scripts/t3bar.py", "threads", "--latest",
-    tostring(integer(noctalia.getConfig("latest_count"), 10, 0, 50)) }, function(result)
+  local argv = { "python3", noctalia.pluginDir() .. "/scripts/t3bar.py", "threads", "--latest",
+    tostring(integer(noctalia.getConfig("latest_count"), 10, 0, 50)) }
+  if noctalia.getConfig("show_settled_threads") == false then table.insert(argv, "--hide-settled") end
+  local accepted = noctalia.runAsync(argv, function(result)
     threadsBusy = false
     threads.loading = false
     local data
