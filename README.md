@@ -65,9 +65,9 @@ type = "PedroRBC/t3code-bar:status"
 end = ["t3code", "tray", "session"]
 ```
 
-The widget shows a code glyph and a count: waiting threads when any need you (in the
+The widget shows the official T3 Code icon and a count: waiting threads when any need you (in the
 `error` color), otherwise working threads (in `primary`). The count hides at zero and the
-glyph dims while T3 Code is offline. The tooltip repeats the counts and the 5-hour limit
+icon dims while T3 Code is offline. The tooltip repeats the counts and the 5-hour limit
 left per provider.
 
 Click the widget to toggle the panel. You can also toggle it from a script or a

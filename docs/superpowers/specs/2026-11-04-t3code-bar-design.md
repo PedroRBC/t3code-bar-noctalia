@@ -178,7 +178,7 @@ Footer: "Updated X min ago" and a refresh button.
 
 ## Decisions made by the builder lead (not the user)
 
-Glyph instead of the T3 logo; default refresh 5 min; latest 10; English-only UI; threads
+Default refresh 5 min; latest 10; English-only UI; threads
 polled every 2 s; e-mail initials for account labels; Codex local `app-server` not used
 (the hub already reports both Codex accounts).
 
