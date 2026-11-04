@@ -1,0 +1,59 @@
+id = "PedroRBC/t3code-bar"
+name = "T3 Code Bar"
+version = "1.0.0"
+plugin_api = 24
+author = "PedroRBC"
+license = "MIT"
+icon = "code"
+description = "T3 Code threads and pooled subscription limits at a glance."
+tags = ["bar", "panel", "service"]
+dependencies = ["python3", "xdg-open"]
+
+[[setting]]
+key = "hub_url"
+type = "string"
+label_key = "settings.hub_url.label"
+description_key = "settings.hub_url.description"
+default = ""
+
+[[setting]]
+key = "management_key"
+type = "string"
+# shortcut: no `secret = true` (needs plugin_api 47, installed Noctalia 5.4.1 tops out at 43); add it when Noctalia updates.
+label_key = "settings.management_key.label"
+description_key = "settings.management_key.description"
+default = ""
+
+[[setting]]
+key = "limits_refresh_minutes"
+type = "int"
+label_key = "settings.limits_refresh_minutes.label"
+description_key = "settings.limits_refresh_minutes.description"
+default = 5
+min = 1
+max = 60
+
+[[setting]]
+key = "latest_count"
+type = "int"
+label_key = "settings.latest_count.label"
+description_key = "settings.latest_count.description"
+default = 10
+min = 0
+max = 50
+
+[[widget]]
+id = "status"
+entry = "widget.luau"
+
+[[panel]]
+id = "panel"
+entry = "panel.luau"
+width = 380
+height = 560
+placement = "attached"
+open_near_click = true
+
+[[service]]
+id = "backend"
+entry = "service.luau"

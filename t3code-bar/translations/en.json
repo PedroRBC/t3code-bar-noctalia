@@ -1,0 +1,65 @@
+{
+  "title": "T3 Code Bar",
+  "tabs": { "threads": "Threads", "usage": "Usage" },
+  "actions": { "refresh": "Refresh", "settings": "Plugin settings" },
+  "providers": { "codex": "Codex", "claude": "Claude", "opencode": "OpenCode" },
+  "widget": {
+    "counts": "T3 Code · {waiting} waiting · {working} working",
+    "provider_left": "{provider} {percent}%",
+    "limits": "{summary} left (5h)"
+  },
+  "threads": {
+    "loading": "Reading T3 Code data…",
+    "offline": "T3 Code offline · showing saved threads",
+    "empty": "No threads",
+    "status_time": "{status} {time}"
+  },
+  "status": {
+    "approval": "Approval", "input": "Input", "connecting": "Connecting",
+    "goal": "Goal", "working": "Working", "failed": "Failed",
+    "planReady": "Plan ready", "done": "Done", "idle": "Idle"
+  },
+  "thread_errors": {
+    "missing": "T3 Code data not found. Start T3 Code or check T3CODE_HOME.",
+    "unavailable": "Cannot read T3 Code data. Check file access and the Python helper.",
+    "incompatibleSchema": "T3 Code database schema changed. Update the plugin.",
+    "busy": "T3 Code database is busy. Retrying shortly.",
+    "invalidData": "T3 Code returned invalid data. Update the plugin or retry."
+  },
+  "windows": {
+    "session": "5h", "weekly": "Weekly", "monthly": "Monthly", "other": "Other",
+    "scoped": "Weekly · {model}"
+  },
+  "pace": { "ahead": "Ahead of pace", "on": "On pace", "under": "Under pace" },
+  "limits": {
+    "left": "{percent}% left",
+    "segment": "{account} · {percent}%",
+    "segment_missing": "{account} · no reading",
+    "loading": "Reading usage limits…",
+    "empty": "No subscription limits reported by the hub.",
+    "resets_now": "resets now",
+    "resets_momentarily": "Resets momentarily",
+    "resets_in": "resets in {time}",
+    "next_refill": "next refill +{percent}% at {time}",
+    "updated": "Updated {minutes} min ago",
+    "never_updated": "No successful reading yet"
+  },
+  "time": {
+    "days_hours": "{days}d {hours}h", "hours_minutes": "{hours}h {minutes}m",
+    "minutes": "{minutes}m", "hours": "{hours}h", "days": "{days}d"
+  },
+  "errors": {
+    "configure": "Configure the CLIProxyAPI hub in the plugin settings",
+    "management_key": "Hub access refused: check the management key",
+    "hub_url": "Enter a valid HTTP or HTTPS hub URL without credentials, query, or fragment. Check the management key for line breaks.",
+    "network": "Cannot reach the CLIProxyAPI hub. Check its URL, network, and TLS certificate.",
+    "http": "The hub or provider returned HTTP {status}. Showing the last successful reading.",
+    "invalid_data": "The hub returned an unexpected response. Showing the last successful reading."
+  },
+  "settings": {
+    "hub_url": { "label": "CLIProxyAPI hub URL", "description": "Base URL, for example https://host:8317. Usage is read through this hub." },
+    "management_key": { "label": "Management key", "description": "Hub management key. Sent only in the HTTP Authorization header." },
+    "limits_refresh_minutes": { "label": "Usage refresh interval (minutes)", "description": "Refresh on start, at this interval, and on panel open when older than one minute." },
+    "latest_count": { "label": "Latest threads", "description": "Recent threads shown after pinned, waiting, and working threads. Set zero to hide recent threads." }
+  }
+}
