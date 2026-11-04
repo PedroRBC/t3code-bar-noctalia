@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """T3 Code Bar helper: print a read-only JSON snapshot of T3 Code threads.
 
-Usage: t3bar.py threads [--latest N]
+Usage: t3bar.py threads [--latest N] [--hide-settled]
 Reads ${T3CODE_HOME:-~/.t3}/userdata/{statev2.sqlite,server-runtime.json,environment-id}.
 Never writes to T3 Code's files. Soft errors exit 0 with "error" set in the JSON.
 """
@@ -151,7 +151,7 @@ def status_of(row):
     return "idle"
 
 
-def read_threads(db_path):
+def read_threads(db_path, hide_settled=False):
     if not db_path.is_file():
         raise SoftError("missing")
     try:
@@ -159,7 +159,10 @@ def read_threads(db_path):
         conn = sqlite3.connect(f"file:{quote(str(db_path))}?mode=ro", uri=True, timeout=0.25)
         conn.row_factory = sqlite3.Row
         try:
-            return conn.execute(QUERY).fetchall()
+            query = QUERY
+            if hide_settled:
+                query += " AND json_extract(t.payload_json, '$.settledOverride') IS NOT 'settled'"
+            return conn.execute(query).fetchall()
         finally:
             conn.close()
     except sqlite3.Error as error:
@@ -225,7 +228,7 @@ def build_threads(rows, latest, env_id, port):
     return threads, counts
 
 
-def threads_snapshot(latest):
+def threads_snapshot(latest, hide_settled=False):
     home = os.environ.get("T3CODE_HOME", "").strip()
     userdata = Path(home or "~/.t3").expanduser() / "userdata"
     runtime = read_runtime(userdata / "server-runtime.json")
@@ -239,7 +242,7 @@ def threads_snapshot(latest):
         "threads": [],
     }
     try:
-        rows = read_threads(userdata / "statev2.sqlite")
+        rows = read_threads(userdata / "statev2.sqlite", hide_settled)
         result["threads"], result["counts"] = build_threads(
             rows, latest, read_text(userdata / "environment-id"), int_field(runtime, "port", 1, 65535))
     except SoftError as error:
@@ -252,8 +255,9 @@ def main(argv=None):
     sub = parser.add_subparsers(dest="command", required=True)
     threads = sub.add_parser("threads")
     threads.add_argument("--latest", type=int, default=10)
+    threads.add_argument("--hide-settled", action="store_true")
     args = parser.parse_args(argv)
-    result = threads_snapshot(max(0, min(50, args.latest)))
+    result = threads_snapshot(max(0, min(50, args.latest)), args.hide_settled)
     sys.stdout.write(json.dumps(result, separators=(",", ":")) + "\n")
     return 0
 

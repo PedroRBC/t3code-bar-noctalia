@@ -34,6 +34,13 @@ min = 1
 max = 60
 
 [[setting]]
+key = "show_settled_threads"
+type = "bool"
+label_key = "settings.show_settled_threads.label"
+description_key = "settings.show_settled_threads.description"
+default = true
+
+[[setting]]
 key = "latest_count"
 type = "int"
 label_key = "settings.latest_count.label"
