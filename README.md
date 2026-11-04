@@ -9,6 +9,20 @@ A community plugin inspired by the macOS menu bar app
 [eliophan/t3code-bar](https://github.com/eliophan/t3code-bar). It is not affiliated with
 or endorsed by T3 Tools.
 
+## Showcase
+
+[![T3 Code and the Threads panel on the animated ARC Motion desktop](assets/showcase/app-and-panel.png)](assets/showcase/showcase.mp4)
+
+[Watch the 12-second showcase](assets/showcase/showcase.mp4) ·
+[View the opened thread in T3 Code](assets/showcase/t3-code.png)
+
+The showcase uses fictional threads, conversations and usage data. Cursor movement
+and window opening are staged; the wallpaper is the actual animated ARC Motion loop.
+
+| Threads | Usage |
+| --- | --- |
+| ![Threads with pinned, waiting and working agents](assets/showcase/threads.png) | ![Pooled Codex and Claude subscription limits](assets/showcase/usage.png) |
+
 ## Features
 
 - Bar count of threads waiting for approval or input, or else of threads working, colored
