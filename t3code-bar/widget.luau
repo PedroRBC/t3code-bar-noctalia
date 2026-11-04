@@ -9,7 +9,7 @@ local function render()
   local waiting, working = counts.waiting or 0, counts.working or 0
   local online = data.online == true and not threads.error
   local color = waiting > 0 and "error" or (working > 0 and "primary" or "on_surface")
-  local children = { ui.glyph({ name = "code", size = 18, color = color, opacity = online and 1 or 0.4 }) }
+  local children = { ui.image({ path = "assets/t3code.png", width = 18, height = 18, opacity = online and 1 or 0.4 }) }
   local count = waiting > 0 and waiting or working
   if count > 0 then table.insert(children, ui.label({ text = tostring(count), color = color, fontWeight = "bold" })) end
   local container = barWidget.isVertical() and ui.column or ui.row

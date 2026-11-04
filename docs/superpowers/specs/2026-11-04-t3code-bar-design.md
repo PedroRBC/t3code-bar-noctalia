@@ -148,11 +148,11 @@ button that calls `noctalia.openSettings()`.
 
 ## UI
 
-**Bar widget**: a glyph (tabler) for T3 Code; a count = waiting threads, else working
+**Bar widget**: the official T3 Code icon (`assets/t3code.png`); a count = waiting threads, else working
 threads, hidden at 0; color by the most urgent status: approval/input → `error`-ish
 attention role, working → `primary`, idle → `on_surface`. Tooltip: counts plus a one-line
 limits summary ("Codex 48% · Claude 83% left (5h)"). Left click toggles the panel.
-Offline: dimmed glyph.
+Offline: dimmed icon.
 
 **Panel header**: two tab buttons, "Threads" and "Usage" (selected one emphasized).
 
@@ -173,7 +173,7 @@ Footer: "Updated X min ago" and a refresh button.
 
 ## Decisions made by the builder lead (not the user)
 
-Glyph instead of the T3 logo; default refresh 5 min; latest 10; English-only UI; threads
+Default refresh 5 min; latest 10; English-only UI; threads
 polled every 2 s; e-mail initials for account labels; Codex local `app-server` not used
 (the hub already reports both Codex accounts).
 
