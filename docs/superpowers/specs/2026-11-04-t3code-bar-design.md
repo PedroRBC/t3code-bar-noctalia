@@ -148,19 +148,24 @@ button that calls `noctalia.openSettings()`.
 
 ## UI
 
-**Bar widget**: the official T3 Code icon (`assets/t3code.png`); a count = waiting threads, else working
-threads, hidden at 0; color by the most urgent status: approval/input → `error`-ish
-attention role, working → `primary`, idle → `on_surface`. Tooltip: counts plus a one-line
-limits summary ("Codex 48% · Claude 83% left (5h)"). Left click toggles the panel.
-Offline: dimmed icon.
+**Bar widget**: the official T3 Code icon (`assets/t3code.png`, the 64 px nightly icon).
+Waiting threads → amber pill with the status word (`Approval`/`Input`, or `N waiting`);
+otherwise working threads → `primary` dot + count; nothing at 0. Vertical bars use the
+dot + count for waiting too (amber). Tooltip: counts plus a one-line limits summary
+("Codex 48% · Claude 83% left (5h)"). Left click toggles the panel. Offline: dimmed icon.
 
-**Panel header**: two tab buttons, "Threads" and "Usage" (selected one emphasized).
+**Panel header**: a compact segmented control, "Threads" and "Usage" with glyphs; the
+selected segment gets a light fill. Rows and segments highlight on hover.
 
 **Threads tab**: one scrollable list, rows in helper order, no headers or dividers between
-groups. Row: line 1 project name (muted) + right-aligned colored status word with
-elapsed/relative time (`Working 3m`, `Approval`, `Input`, `Failed`, `Done`, `5m`/`2h`/`3d`);
-line 2 thread title (1 line, elided); line 3 (when present) branch + provider name.
-Pinned rows show a pin glyph. Click → `runAsync({"xdg-open", openUrl})` then close the
+groups (layout modelled on eliophan/t3code-bar). Row: line 1 a two-letter project badge
+(tinted color hashed from the project name), pin glyph when pinned, project name (muted),
+then right-aligned status: bold colored word plus monospace timer for live runs
+(`Working 1h 39m`, `Goal 8s`), the word alone for `Approval`/`Input` (amber), `Failed`
+(error), `Plan ready`/`Done` (tertiary), or just the muted relative time (`5m`/`2h`/`3d`);
+line 2 thread title (bold, 1 line, elided); line 3 (when present) branch. The provider icon
+(OpenAI glyph, Claude spark `assets/claude.svg`, terminal glyph for OpenCode) sits at the
+right of the last line. Click → `runAsync({"xdg-open", openUrl})` then close the
 panel. Notices: "Reading T3 Code data…", "T3 Code offline · showing saved threads",
 schema/DB errors with a short hint, "No threads".
 
