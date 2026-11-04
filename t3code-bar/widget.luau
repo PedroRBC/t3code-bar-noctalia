@@ -15,7 +15,7 @@ local function render()
     local word = noctalia.tr("widget.waiting", { count = waiting })
     if waiting == 1 then
       for _, thread in ipairs(data.threads or {}) do
-        if thread.status == "approval" or thread.status == "input" then word = noctalia.tr("status." .. thread.status) break end
+        if thread.status == "approval" or thread.status == "input" then word = noctalia.tr("widget." .. thread.status) break end
       end
     end
     table.insert(children, ui.row({ paddingH = 8, paddingV = 1, radius = 9, fill = AMBER, align = "center" }, {

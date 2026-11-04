@@ -152,29 +152,34 @@ button that calls `noctalia.openSettings()`.
 Waiting threads → amber pill with the status word (`Approval`/`Input`, or `N waiting`);
 otherwise working threads → `primary` dot + count; nothing at 0. Vertical bars use the
 dot + count for waiting too (amber). Tooltip: counts plus a one-line limits summary
-("Codex 48% · Claude 83% left (5h)"). Left click toggles the panel. Offline: dimmed icon.
+("Codex 48% · Claude 83% left (5-hour)"). Left click toggles the panel. Offline: dimmed icon.
 
 **Panel header**: a compact segmented control, "Threads" and "Usage" with glyphs; the
 selected segment gets a light fill. Rows and segments highlight on hover.
 
 **Threads tab**: one scrollable list, rows in helper order, no headers or dividers between
-groups (layout modelled on eliophan/t3code-bar). Row: line 1 a two-letter project badge
-(tinted color hashed from the project name), pin glyph when pinned, project name (muted),
-then right-aligned status: bold colored word plus monospace timer for live runs
-(`Working 1h 39m`, `Goal 8s`), the word alone for `Approval`/`Input` (amber), `Failed`
-(error), `Plan ready`/`Done` (tertiary), or just the muted relative time (`5m`/`2h`/`3d`);
-line 2 thread title (bold, 1 line, elided); line 3 (when present) branch. The provider icon
-(OpenAI glyph, Claude spark `assets/claude.svg`, terminal glyph for OpenCode) sits at the
-right of the last line. Click → `runAsync({"xdg-open", openUrl})` then close the
-panel. Notices: "Reading T3 Code data…", "T3 Code offline · showing saved threads",
-schema/DB errors with a short hint, "No threads".
+groups. Row, two lines: line 1 the thread title (14 px semibold, elided) and a pin glyph
+when pinned; line 2 the provider mark (OpenAI glyph, neutral Claude spark
+`assets/claude-mono.svg`, terminal glyph for OpenCode, empty slot when unknown), then
+"project · branch" (muted, elided), then right-aligned status and monospace time. Status
+colors carry one meaning each: `Needs approval`/`Needs input` are amber filled pills that
+match the bar pill; `Working`/`Goal`/`Connecting` and their run timer use `primary`;
+`Failed` uses `error`; `Plan ready`/`Done` are neutral `on_surface`; idle rows show only
+the muted relative time (`5m`/`2h`/`3d`). No per-project colors, so status is the only
+color in the list. Click → `runAsync({"xdg-open", openUrl})` then close the panel.
+Notices ("Reading T3 Code data…", "T3 Code offline · showing saved threads", schema/DB
+errors) are subtle filled banners; an empty list is a centered "No threads yet" state.
 
 **Usage tab**: one section per provider (Codex, Claude; order like T3: codex, claude).
 Each section: one card per pooled window (5h first, then weekly, then others), showing
-the window label, a big "N% left", a pace marker (ahead/on/under), a bar split into one
-segment per account (labelled by e-mail initials, never the full e-mail), "resets in
-3h 41m", and "next refill +X% at HH:MM" when the pool has more than one account.
-Footer: "Updated X min ago" and a refresh button.
+the window label ("5-hour", "Weekly", "Weekly · Opus"), a pace marker ("Usage above
+pace" in `error`, "On pace", "Usage below pace"), a big "N% left" with the reset beside
+it, and a bar split into one segment per account. For pools of several accounts the
+segments are labelled by e-mail initials (never the full e-mail), the header shows the
+account count, and the reset line becomes "Refill +X% in 1h 11m", with "Resets in …"
+above it only when the soonest reset is a different moment. Footer: "Updated just now" /
+"Updated X min ago" and a refresh button. Unconfigured hub: a centered "Connect a
+CLIProxyAPI hub" state with an **Open settings** button and no footer.
 
 ## Decisions made by the builder lead (not the user)
 

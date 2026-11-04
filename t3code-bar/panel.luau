@@ -4,13 +4,14 @@ local threads = noctalia.state.get("threads") or { loading = true, data = {} }
 local limits = noctalia.state.get("limits") or { loading = true, accounts = {}, updatedAt = 0 }
 local activeTab, opened, hovered = "threads", false, nil
 local render
-local AMBER, CLAUDE = "#F2C14E", "#D97757"
-local BADGES = { "#E5534B", "#4C8DFF", "#3FB950", "#B083F0", "#E3A008", "#2BB5A8", "#EC6CB9" }
+-- Amber means "needs you" everywhere (bar pill and rows); dark text keeps it readable on light themes too.
+local AMBER, ON_AMBER, CLAUDE = "#F2C14E", "#1F1600", "#D97757"
 local PROVIDERS = {
-  codex = { key = "codex", glyph = "brand-openai" },
-  claudeAgent = { key = "claude", image = "assets/claude.svg" },
-  claude = { key = "claude", image = "assets/claude.svg" },
-  opencode = { key = "opencode", glyph = "terminal-2" },
+  codex = { glyph = "brand-openai" },
+  -- Rows use a neutral Claude mark (images cannot be tinted) so only status carries color; Usage keeps the brand mark.
+  claudeAgent = { image = "assets/claude-mono.svg" },
+  claude = { image = "assets/claude.svg" },
+  opencode = { glyph = "terminal-2" },
 }
 local function tr(key, values) return noctalia.tr(key, values) end
 local function label(text, extra)
@@ -39,145 +40,173 @@ local function elapsed(stamp, precise)
   end
   return tr("time.days", { days = math.floor(hours / 24) })
 end
--- Two-letter project badge: first char plus first digit, next word, camel hump or next char ("in2" -> I2, "TruenasServer" -> TS).
-local function monogram(name)
-  local start = name:find("%w")
-  if not start then return "?", BADGES[1] end
-  local rest = name:sub(start + 1)
-  local second = rest:match("%d") or rest:match("[^%w]+(%w)") or name:match("%l(%u)") or rest:match("%w") or ""
-  local hash = 0
-  for index = 1, #name do hash = (hash * 31 + name:byte(index)) % 9973 end
-  return (name:sub(start, start) .. second):upper(), BADGES[hash % #BADGES + 1]
-end
-local function badge(name)
-  local text, color = monogram(name)
-  return ui.column({ width = 22, height = 18, radius = 5, fill = color .. "33", align = "center", justify = "center" }, {
-    label(text, { fontSize = 9, fontWeight = "bold", color = color, fontFamily = "monospace" }),
-  })
-end
 local function providerIcon(provider, size)
   local known = PROVIDERS[provider]
-  if not known then return label(provider, { fontSize = 11 }) end
+  if not known then return nil end
   if known.image then return ui.image({ path = known.image, width = size, height = size, fit = "contain" }) end
   return ui.glyph({ name = known.glyph, size = size, color = "on_surface_variant" })
 end
-local function statusParts(thread, online)
-  local status = thread.status
-  local live = status == "working" or status == "connecting" or status == "goal"
-  if status == "approval" or status == "input" then return tr("status." .. status), nil, AMBER end
-  if status == "failed" then return tr("status.failed"), nil, "error" end
-  if status == "planReady" or status == "done" then return tr("status." .. status), nil, "tertiary" end
-  if live and online then return tr("status." .. status), elapsed(thread.since, true), "primary" end
-  return nil, elapsed(thread.since, false), "on_surface_variant"
+local function pill(text)
+  return ui.row({ paddingH = 7, paddingV = 0, radius = 9, fill = AMBER, align = "center" }, {
+    label(text, { fontSize = 11, fontWeight = "bold", color = ON_AMBER }),
+  })
+end
+-- Waiting: amber pill. Live run: primary. Failed: error. Plan ready/Done: plain text. Idle: time only.
+local function statusBadge(status, online)
+  local word = tr("status." .. status)
+  if status == "approval" or status == "input" then return pill(word) end
+  if status == "failed" then return label(word, { fontWeight = "semibold", color = "error" }) end
+  if status == "planReady" or status == "done" then return label(word, { fontWeight = "medium", color = "on_surface" }) end
+  if online and (status == "working" or status == "connecting" or status == "goal") then
+    return label(word, { fontWeight = "semibold", color = "primary" })
+  end
+  return nil
 end
 local function threadRow(thread, online)
-  local word, time, color = statusParts(thread, online)
-  local project = type(thread.projectName) == "string" and thread.projectName or ""
-  local heading = { badge(project) }
-  if thread.pinned then table.insert(heading, ui.glyph({ name = "pinned", size = 13, color = "on_surface_variant" })) end
-  table.insert(heading, label(project, { fontSize = 13, flexGrow = 1 }))
-  if word then table.insert(heading, label(word, { fontWeight = "bold", color = color })) end
-  if time then table.insert(heading, label(time, { fontFamily = "monospace", color = color, opacity = word and 0.75 or 1 })) end
-  local title = { label(thread.title, { fontSize = 15, fontWeight = "semibold", color = "on_surface", flexGrow = 1 }) }
-  local rows = { ui.row({ gap = 7, align = "center" }, heading), ui.row({ gap = 8, align = "center" }, title) }
-  local icon = type(thread.provider) == "string" and thread.provider ~= "" and providerIcon(thread.provider, 15) or nil
-  if type(thread.branch) == "string" and thread.branch ~= "" then
-    local details = { label(thread.branch, { flexGrow = 1 }) }
-    if icon then table.insert(details, icon) end
-    table.insert(rows, ui.row({ gap = 8, align = "center" }, details))
-  elseif icon then table.insert(title, icon) end
+  local status = thread.status
+  local live = online and (status == "working" or status == "connecting" or status == "goal")
+  -- Line 1 is the title alone; line 2 is where it runs (left) and its state (right).
+  local top = { label(thread.title, { fontSize = 14, fontWeight = "semibold", color = "on_surface", flexGrow = 1 }) }
+  if thread.pinned then table.insert(top, ui.glyph({ name = "pinned", size = 13, color = "on_surface_variant" })) end
+  local meta = {}
+  -- An empty slot keeps project names aligned when the provider is unknown.
+  table.insert(meta, type(thread.provider) == "string" and providerIcon(thread.provider, 13)
+    or ui.box({ width = 13, height = 13, fill = "on_surface/0" }))
+  local place = {}
+  if type(thread.projectName) == "string" and thread.projectName ~= "" then table.insert(place, thread.projectName) end
+  if type(thread.branch) == "string" and thread.branch ~= "" then table.insert(place, thread.branch) end
+  table.insert(meta, label(table.concat(place, " · "), { flexGrow = 1 }))
+  local badge = statusBadge(status, online)
+  if badge then table.insert(meta, badge) end
+  table.insert(meta, label(elapsed(thread.since, live), { fontFamily = "monospace", fontSize = 11,
+    color = live and "primary" or "on_surface_variant" }))
   local key = "thread:" .. thread.id
-  return ui.column({ key = key, gap = 4, paddingH = 12, paddingV = 9, radius = 12,
-    fill = hovered == key and "on_surface/0.08" or "on_surface/0", onHover = hover(key), onClick = function()
+  return ui.column({ key = key, gap = 3, paddingH = 12, paddingV = 8, radius = 10,
+    fill = hovered == key and "on_surface/0.07" or "on_surface/0", onHover = hover(key), onClick = function()
       local url = thread.openUrl
       if type(url) == "string" and url:match("^t3code://threads/[^/%s]+/[^/%s]+$") and not url:find("[%c]") then
         noctalia.runAsync({ "xdg-open", url })
         panel.close()
       end
-    end }, rows)
+    end }, {
+    ui.row({ gap = 8, align = "center" }, top),
+    ui.row({ gap = 6, align = "center" }, meta),
+  })
 end
 local function notice(text, glyph, color)
-  return ui.row({ gap = 8, align = "center", paddingH = 12, paddingV = 10 }, {
-    ui.glyph({ name = glyph, size = 15, color = color or "on_surface_variant" }),
+  return ui.row({ gap = 8, align = "center", paddingH = 12, paddingV = 8, radius = 10, fill = "on_surface/0.05" }, {
+    ui.glyph({ name = glyph, size = 14, color = color or "on_surface_variant" }),
     label(text, { color = color or "on_surface_variant", maxLines = 4, flexGrow = 1 }),
   })
 end
+-- Centered state for an empty or unconfigured tab: glyph, title, hint, optional action.
+local function emptyState(glyph, title, hint, action)
+  local children = {
+    ui.glyph({ name = glyph, size = 26, color = "on_surface_variant" }),
+    ui.box({ height = 8, fill = "on_surface/0" }),
+    label(title, { fontSize = 14, fontWeight = "semibold", color = "on_surface", textAlign = "center" }),
+    label(hint, { textAlign = "center", maxLines = 3 }),
+  }
+  if action then table.insert(children, ui.box({ height = 12, fill = "on_surface/0" })) table.insert(children, action) end
+  return ui.column({ flexGrow = 1, gap = 4, align = "center", justify = "center", paddingH = 28 }, children)
+end
 local function threadsView()
   local data = threads.data or {}
+  local online = data.online == true and not threads.error
   local rows = {}
   if threads.loading then table.insert(rows, notice(tr("threads.loading"), "loader-2")) end
   if threads.error then table.insert(rows, notice(tr("thread_errors." .. threads.error), "alert-circle", "error")) end
   if not threads.loading and data.online == false then table.insert(rows, notice(tr("threads.offline"), "plug-connected-x")) end
-  for _, thread in ipairs(data.threads or {}) do table.insert(rows, threadRow(thread, data.online == true and not threads.error)) end
-  if not threads.loading and #(data.threads or {}) == 0 and not threads.error then
-    table.insert(rows, notice(tr("threads.empty"), "messages"))
+  if not threads.loading and not threads.error and #(data.threads or {}) == 0 then
+    table.insert(rows, emptyState("messages", tr("threads.empty"), tr("threads.empty_hint")))
+    return ui.column({ key = "threads-list", flexGrow = 1, gap = 2 }, rows)
   end
+  for _, thread in ipairs(data.threads or {}) do table.insert(rows, threadRow(thread, online)) end
   return ui.scroll({ key = "threads-list", flexGrow = 1, gap = 2 }, rows)
 end
-local function windowCard(window, color)
-  local title = tr("windows." .. window.kind)
-  if window.model then title = tr("windows.scoped", { model = window.model }) end
-  local head = { label(title, { fontSize = 13, color = "on_surface", fontWeight = "semibold", flexGrow = 1 }) }
-  if window.pace then table.insert(head, label(tr("pace." .. window.pace), {
-    fontSize = 11, color = window.pace == "ahead" and "error" or "on_surface_variant" })) end
-  local rows = {
-    ui.row({ gap = 8, align = "center" }, head),
-    ui.row({ gap = 6, align = "end" }, {
-      label(tostring(window.remainingPercent) .. "%", { fontSize = 24, fontWeight = "bold", color = "on_surface" }),
-      label(tr("limits.left"), { fontSize = 12 }),
-    }),
-  }
-  local segments = {}
-  for _, member in ipairs(window.columns) do
-    local remaining = member.window and L.remainingPercent(member.window) or 0
-    table.insert(segments, ui.column({ flexGrow = 1, gap = 4 }, {
-      ui.progress({ progress = remaining / 100, height = 6, fill = color, track = "on_surface/0.1", radius = 3 }),
-      label(tr(member.window and "limits.segment" or "limits.segment_missing", {
-        account = member.account.initials, percent = remaining }), { fontSize = 11, fontFamily = "monospace" }),
-    }))
-  end
-  table.insert(rows, ui.row({ gap = 6 }, segments))
-  local foot = {}
-  local reset = window.resets[1]
-  if reset then table.insert(foot, label(L.formatResetsIn({ resetsAt = reset.at }, noctalia.nowMs(), tr), { fontSize = 11, flexGrow = 1 })) end
+-- When usage comes back: the soonest reset and, for pools, the next refill; one line when they coincide.
+local function resetLines(window, now)
+  local first, refill, lines = window.resets[1], nil, {}
+  if not first then return lines end
   if #window.columns > 1 then
-    for _, refill in ipairs(window.resets) do
-      if refill.restoresPercent > 0 then
-        table.insert(foot, label(tr("limits.next_refill", {
-          percent = refill.restoresPercent, time = noctalia.formatTime("%H:%M", refill.at / 1000) }), { fontSize = 11 }))
-        break
-      end
+    for _, reset in ipairs(window.resets) do
+      if reset.restoresPercent > 0 then refill = reset break end
     end
   end
-  if #foot > 0 then table.insert(rows, ui.row({ gap = 8, align = "center" }, foot)) end
-  return ui.column({ key = window.key, gap = 8, paddingH = 14, paddingV = 12, radius = 12, fill = "on_surface/0.05" }, rows)
+  if not refill or refill.at ~= first.at then table.insert(lines, L.formatResetsIn({ resetsAt = first.at }, now, tr)) end
+  if refill then
+    table.insert(lines, refill.at - now < 60000 and tr("limits.refill_now", { percent = refill.restoresPercent })
+      or tr("limits.refill_in", { percent = refill.restoresPercent, time = L.formatDuration(refill.at - now, tr) }))
+  end
+  return lines
+end
+local function windowCard(window, color)
+  local now = noctalia.nowMs()
+  local title = window.model and tr("windows.scoped", { model = window.model }) or tr("windows." .. window.kind)
+  local head = { label(title, { fontWeight = "semibold", color = "on_surface", flexGrow = 1 }) }
+  if window.pace then table.insert(head, label(tr("pace." .. window.pace), {
+    fontSize = 11, color = window.pace == "ahead" and "error" or "on_surface_variant" })) end
+  -- No baseline alignment in the toolkit: lift the small labels off the big figure's descent.
+  local function onBaseline(node, grow) return ui.column({ flexGrow = grow }, { node, ui.box({ height = 3, fill = "on_surface/0" }) }) end
+  local figure = {
+    label(tostring(window.remainingPercent) .. "%", { fontSize = 22, fontWeight = "bold", color = "on_surface" }),
+    onBaseline(label(tr("limits.left")), 1),
+  }
+  local resets = {}
+  for _, line in ipairs(resetLines(window, now)) do table.insert(resets, label(line, { fontSize = 11 })) end
+  if #resets > 0 then table.insert(figure, onBaseline(ui.column({ gap = 2, align = "end" }, resets))) end
+  local bars, names = {}, {}
+  for _, member in ipairs(window.columns) do
+    local remaining = member.window and L.remainingPercent(member.window) or 0
+    table.insert(bars, ui.progress({ flexGrow = 1, progress = remaining / 100, height = 6, fill = color,
+      track = "on_surface/0.1", radius = 3 }))
+    table.insert(names, label(tr(member.window and "limits.segment" or "limits.segment_missing", {
+      account = member.account.initials, percent = remaining }), { flexGrow = 1, fontSize = 11 }))
+  end
+  local rows = {
+    ui.row({ gap = 8, align = "center" }, head),
+    ui.row({ gap = 6, align = "end" }, figure),
+    ui.row({ gap = 6 }, bars),
+  }
+  -- Account labels only help tell segments apart; one account's number is the big figure.
+  if #window.columns > 1 then table.insert(rows, ui.row({ gap = 6 }, names)) end
+  return ui.column({ key = window.key, gap = 6, paddingH = 12, paddingV = 11, radius = 12, fill = "on_surface/0.05" }, rows)
 end
 local function usageView()
+  local configure = limits.error and limits.error.key == "errors.configure"
+  if configure then
+    return emptyState("plug-connected", tr("errors.configure"), tr("limits.configure_hint"),
+      ui.button({ text = tr("actions.settings"), glyph = "settings", controlSize = "sm", onClick = function() noctalia.openSettings() end }))
+  end
   local rows = {}
   if limits.loading then table.insert(rows, notice(tr("limits.loading"), "loader-2")) end
   if limits.error then
     table.insert(rows, notice(tr(limits.error.key, { status = limits.error.status or 0 }), "alert-circle", "error"))
-    if limits.error.key == "errors.configure" then
-      table.insert(rows, ui.button({ text = tr("actions.settings"), glyph = "settings", onClick = function() noctalia.openSettings() end }))
-    end
   end
   local pools = L.collectLimitPools(limits.accounts or {}, noctalia.nowMs())
-  for _, pool in ipairs(pools) do
+  for index, pool in ipairs(pools) do
     local isClaude = pool.driver == "claude"
-    table.insert(rows, ui.row({ gap = 8, align = "center", paddingH = 4, paddingV = 2 }, {
-      providerIcon(isClaude and "claude" or pool.driver, 16),
-      label(tr("providers." .. pool.driver), { fontWeight = "bold", color = "on_surface", fontSize = 14 }),
-    }))
+    -- Extra room above later sections so each heading groups with the cards below it.
+    if index > 1 then table.insert(rows, ui.box({ height = 8, fill = "on_surface/0" })) end
+    local header = {
+      providerIcon(isClaude and "claude" or pool.driver, 15),
+      label(tr("providers." .. pool.driver), { fontWeight = "bold", color = "on_surface", fontSize = 14, flexGrow = 1 }),
+    }
+    local count = pool.windows[1] and #pool.windows[1].columns or 0
+    if count > 1 then table.insert(header, label(tr("limits.accounts", { count = count }), { fontSize = 11 })) end
+    table.insert(rows, ui.row({ gap = 8, align = "center", paddingH = 12, paddingV = 2 }, header))
     for _, window in ipairs(pool.windows) do table.insert(rows, windowCard(window, isClaude and CLAUDE or "primary")) end
     if #pool.windows == 0 then table.insert(rows, notice(tr("limits.empty"), "gauge")) end
   end
   if #pools == 0 and not limits.loading and not limits.error then table.insert(rows, notice(tr("limits.empty"), "gauge")) end
-  return ui.column({ flexGrow = 1, gap = 8 }, {
+  local minutes = math.floor(math.max(0, noctalia.nowMs() - (limits.updatedAt or 0)) / 60000)
+  local updated = (limits.updatedAt or 0) <= 0 and tr("limits.never_updated")
+    or (minutes < 1 and tr("limits.updated_now") or tr("limits.updated", { minutes = minutes }))
+  return ui.column({ flexGrow = 1, gap = 6 }, {
     ui.scroll({ key = "usage-list", flexGrow = 1, gap = 8 }, rows),
-    ui.row({ gap = 8, align = "center", paddingH = 4 }, {
-      label((limits.updatedAt or 0) > 0 and tr("limits.updated", {
-        minutes = math.floor(math.max(0, noctalia.nowMs() - limits.updatedAt) / 60000) }) or tr("limits.never_updated"),
-        { flexGrow = 1, fontSize = 11 }),
+    -- 15 = the 12px content inset plus the scroll view's own ~3px inset (measured).
+    ui.row({ gap = 8, align = "center", paddingH = 15 }, {
+      label(updated, { flexGrow = 1, fontSize = 11 }),
       ui.button({ glyph = "refresh", variant = "ghost", controlSize = "sm", tooltip = tr("actions.refresh"),
         enabled = not limits.refreshing, onClick = function() requestLimits(true) end }),
     }),
@@ -192,7 +221,7 @@ local function tabs()
       fill = selected and "on_surface/0.12" or (hovered == key and "on_surface/0.06" or "on_surface/0"),
       onHover = hover(key), onClick = function() activeTab, hovered = tab.id, nil render() end }, {
       ui.glyph({ name = tab.glyph, size = 14, color = color }),
-      label(tr("tabs." .. tab.id), { fontSize = 12, fontWeight = selected and "semibold" or "medium", color = color }),
+      label(tr("tabs." .. tab.id), { fontWeight = selected and "semibold" or "medium", color = color }),
     }))
   end
   return ui.row({ gap = 3, padding = 3, radius = 11, fill = "on_surface/0.05" }, items)
